@@ -22,6 +22,7 @@ This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. I
 
 
 ## Environment
+* Ubuntu 16.04
 * Nvidia Tesla V100
 * CUDA 9.0 
 * Python==3.6.8
