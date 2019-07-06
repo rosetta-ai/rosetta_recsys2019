@@ -1,4 +1,4 @@
-# The 5th Place Solution to The 2019 ACM RecSys Challenge by Rosetta.ai
+# The 5th Place Solution to The 2019 ACM RecSys Challenge
 
 
 <a href="https://rosetta.ai/"><img src="https://www.rosetta.ai/images/logo.png" height="90" ></a>
@@ -23,7 +23,6 @@ This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. I
 
 ## Environment
 * Ubuntu 16.04
-* Nvidia Tesla V100
 * CUDA 9.0 
 * Python==3.6.8
 * Numpy==1.16
