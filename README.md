@@ -3,7 +3,7 @@
 
 <a href="https://rosetta.ai/"><img src="https://www.rosetta.ai/images/logo.png" height="90" ></a>
 <a href="https://www.ntu.edu.tw/"><img src="https://upload.wikimedia.org/wikipedia/zh/thumb/4/4c/National_Taiwan_University_logo.svg/1200px-National_Taiwan_University_logo.svg.png"  height="120"></a>
-<a href="https://www.utdallas.edu/"><img src="https://yt3.ggpht.com/a/AGF-l7-x9pb2HmLWEJxTncC5EjzekRKX9I-qpX4nXg=s900-mo-c-c0xffffffff-rj-k-no"  height="130"></a>
+<a href="https://www.utdallas.edu/"><img src="https://yt3.ggpht.com/a/AGF-l7-x9pb2HmLWEJxTncC5EjzekRKX9I-qpX4nXg=s900-mo-c-c0xffffffff-rj-k-no"  height="130"></a> 
 
 
 ## Team members 
