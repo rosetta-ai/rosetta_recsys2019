@@ -2,34 +2,26 @@ from config import *
 from data import *
 from utils import *
 from constant import *
-from rnn import *
-from ncf import *
+from nn import *
 from torch.autograd import Variable
 from tqdm import tqdm
 import numpy as np
-import slack
 import os
-from torchviz import make_dot
-import matplotlib.pyplot as plt
-from tensorboardX import SummaryWriter
 from datetime import datetime
 import pytz 
 
 
-client = slack.WebClient(token=os.environ['SLACK_API_TOKEN'])
 
 
 
-model_name = 'ncf_xnn_time_diff_v2'
+
+model_name = 'nn_xnn_time_diff_v2'
 
 
 torch.backends.cudnn.deterministic = True
 seed_everything(42)
 
-configuration = NCFConfiguration()
-
-# now = pytz.timezone('Asia/Taipei').localize(datetime.now())
-# logdir = f'../runs/{now.month}-{now.day} {now.hour}:{now.minute} {configuration.device_id}'
+configuration = NNConfiguration()
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(configuration.device_id)
@@ -48,23 +40,16 @@ if configuration.debug:
 
 model_name += f'_{configuration.device_id}'
 
-# model_name += f'_{now.month}-{now.day}-{now.hour}-{now.minute}'
+
 weight_path = f"../weights/{model_name}.model"
 
 
 
 
 print(configuration.get_attributes())
-# with open(f'../input/ncf_xnn_int_diff_v2_all_ut_0_dg.p','rb') as f:
-#     data_gen = pickle.load( f)  
 
-# data_gen.config.begin_iter = configuration.begin_iter
-# data_gen.config.learning_rate = configuration.learning_rate
-# data_gen.config.device_id = configuration.device_id
-# data_gen.config.max_iters = configuration.max_iters
-# configuration = data_gen.config
 
-data_gen = NCFDataGenerator(configuration)
+data_gen = NNDataGenerator(configuration)
 
 
 
@@ -78,9 +63,9 @@ train_data= data_gen.train_data
 
 
 if configuration.use_cuda:
-    net = NCF(configuration).cuda()
+    net = Net(configuration).cuda()
 else:
-    net = NCF(configuration)
+    net = Net(configuration)
 
 optim = use_optimizer(net, configuration)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, 'min',min_lr=0.0005, factor=0.7, verbose=True)
@@ -129,9 +114,7 @@ def evaluate_valid(val_loader, val_df, net ):
     
             
     val_df['score'], val_loss = get_prediction(val_loader, net)
-    # train_data['score'], _ = get_prediction(train_loader, net)
-    # pickle.dump( train_data, open(f'../output/{model_name}_train_prediction.p','wb'))
-    # pickle.dump( val_df, open(f'../output/{model_name}_val_prediction.p','wb'))
+
     
     grouped_val = val_df.groupby('session_id')
     rss = []
@@ -185,12 +168,6 @@ for i in range(configuration.num_epochs):
         past_interactions = Variable(data[2]).to(device=device_type)
         
         past_interaction_masks = (data[3])
-
-        # past_interaction_masks = past_interaction_masks[:,:, np.newaxis]
-        # past_interaction_masks = [past_interaction_masks] * configuration.categorical_emb_dim
-        # past_interaction_masks = np.concatenate(past_interaction_masks, axis=2)
-        # past_interaction_masks = torch.FloatTensor(past_interaction_masks)
-        # past_interaction_masks = Variable(past_interaction_masks).to(device=device_type)
         
         price_rank = Variable(data[4]).to(device=device_type)
         city = Variable(data[5]).to(device=device_type)
@@ -230,73 +207,9 @@ for i in range(configuration.num_epochs):
 
 net.load_state_dict(torch.load(weight_path))    
 
-# item_embeddings = net.emb_dict['item_id'].weight.detach().cpu().numpy()
-# item_ids = data_gen.cat_encoders['item_id'].reverse_transform(np.arange(len(item_embeddings)))
 
-# item_embedding_df = pd.DataFrame(item_embeddings, columns=[ f'nn{i}' for i in range(item_embeddings.shape[1])])
-# item_embedding_df['item_id'] = item_ids
-
-# with open(f'../input/{model_name}_ie.p','wb') as f:
-#     pickle.dump(item_embedding_df, f)
 print("BEST mrr", best_mrr)
 
-
-# dot = make_dot(prediction, params=dict(net.named_parameters()))
-# dot.format='png'
-# dot.render('graph')
-
-if configuration.slack:
-    response = client.chat_postMessage(
-    channel='#recsys2019',
-    blocks=[
-
-    {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": "*configuration* :\n" + str(configuration.get_attributes())
-
-        },
-
-    },
-    {
-        "type": "section",
-        "fields": [
-            {
-                "type": "mrkdwn",
-                "text": f"*Features* :\n```{data_gen.get_features()}```"
-            }
-        ]
-    },
-    {
-        "type": "section",
-        "fields": [
-            {
-                "type": "mrkdwn",
-                "text": f"*Model Summary* :\n{net}"
-            }
-        ]
-    },
-    {
-        "type": "section",
-        "fields": [
-            {
-                "type": "mrkdwn",
-                "text": f"*best mrr & loss* :\n {best_mrr}, {val_loss}"
-            }
-        ]
-    },
-    {
-        "type": "section",
-        "fields": [
-            {
-                "type": "mrkdwn",
-                "text": f"*Mrr Group* :\n{mrr_group}"
-            }
-        ]
-    }
-  ]) 
-    # client.files_upload(file=open('graph.png', 'rb'), filename='graph.png', channels='#recsys2019')
 
 
 if configuration.debug:

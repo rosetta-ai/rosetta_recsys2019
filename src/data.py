@@ -18,7 +18,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-class NCFDataLoader():
+class NNDataLoader():
     def __init__(self, data, config, shuffle=True, batch_size=128, continuous_features=None):
         self.item_id = torch.LongTensor(data.item_id.values)
         self.config = config
@@ -36,13 +36,7 @@ class NCFDataLoader():
         self.continuous_features = torch.FloatTensor(data.loc[:,continuous_features].values)
 
         self.neighbor_prices = torch.FloatTensor(np.vstack(data.neighbor_prices))
-        # other_is_interacted = torch.FloatTensor(np.vstack(data.other_is_interacted))
-        # other_is_clicked = torch.FloatTensor(np.vstack(data.other_is_clicked))
-        
-        # self.continuous_features = torch.cat([self.continuous_features, other_is_interacted, other_is_clicked], dim=1)
-        # print(data.neighbor_prices)
-        # print(neighbor_prices.shape)
-        # self.continuous_features = torch.cat([self.continuous_features, neighbor_prices], dim=1)
+
         
 
         self.star = torch.LongTensor(data.star)
@@ -54,9 +48,7 @@ class NCFDataLoader():
         self.last_interact_index = torch.LongTensor(data.last_interact_index.values)
         self.other_item_ids = torch.LongTensor(np.vstack(data.other_item_ids.values))
         self.city_platform = torch.LongTensor(data.city_platform.values)
-        # self.log_price = torch.LongTensor(data.log_price.values)
-        # self.user_id = torch.LongTensor(data.user_id.values)
-        # self.other_item_impressions = torch.LongTensor(np.vstack(data.other_item_impressions.values))
+
         
         assert len(self.item_id) == len(self.past_interactions)
         assert len(self.past_interactions) == len(self.label)
@@ -77,8 +69,7 @@ class NCFDataLoader():
                      , self.last_item[current_indices], self.impression_index[current_indices], self.continuous_features[current_indices]\
                      , self.star[current_indices], self.past_interactions_sess[current_indices], self.past_actions_sess[current_indices]\
                      , self.last_click_item[current_indices], self.last_click_impression[current_indices], self.last_interact_index[current_indices]\
-                     , self.neighbor_prices[current_indices], self.other_item_ids[current_indices], self.city_platform[current_indices]]
-                     #, self.other_item_ids[current_indices], self.other_item_impressions[current_indices]]
+                     , self.neighbor_prices[current_indices], self.other_item_ids[current_indices], self.city_platform[current_indices]]                     
             self.batch_id += 1
             return result
         else:
@@ -86,8 +77,8 @@ class NCFDataLoader():
 
 
 
-class NCFDataGenerator():
-    """Construct dataset for NCF"""
+class NNDataGenerator():
+    """Construct dataset for NN"""
     def __init__(self, config):
         """
         args:
@@ -114,8 +105,6 @@ class NCFDataGenerator():
             item_meta['properties'] = item_meta.properties.apply(lambda x: x.split('|'))
             item_meta['item_id'] = item_meta['item_id'].apply(str)
 
-        # with open('../output/ncf_xnn_intpop_clickout_v2_all_ut_lgb_bf_beach_v2_all_ut_xgb_4_8_8_pseudo_label.p','rb') as f:
-        #     pseudo_label_test = pickle.load(f)
 
 
         if config.sub_sample:
@@ -132,11 +121,7 @@ class NCFDataGenerator():
         test.rename(columns={'reference': 'item_id', 'action_type':'action'}, inplace=True)
         
         
-        # test = test.merge(pseudo_label_test, on=['session_id'], how='left')
-        # align columns
-        # train['pseudo_label'] = np.nan
-        # train = train.loc[:, test.columns]
-        
+
 
         # fill item_id with DUMMY
         train.loc[train.action=='change of sort order','action'] = train.loc[train.action=='change of sort order'].apply(lambda row: row.action + str(row.item_id), axis=1)
@@ -228,26 +213,11 @@ class NCFDataGenerator():
 
         train['second_last_item'] = train_shifted_item_id
         test['second_last_item'] = test_shifted_item_id
-        # train.loc[train.action != 'clickout item','last_item'] = \
-        # train.loc[train.action != 'clickout item', 'item_id']
-        
-        # test.loc[test.action != 'clickout item' ,'last_item'] = \
-        # test.loc[test.action != 'clickout item', 'item_id']
+
         
         train['step_rank'] = train.groupby('session_id')['timestamp'].rank(method='max', ascending=True)
         test['step_rank'] = test.groupby('session_id')['timestamp'].rank(method='max', ascending=True)
         
-       
-        
-        # train["last_item"].fillna(method='ffill', inplace=True)
-        # test["last_item"].fillna(method='ffill', inplace=True)
-        
-
-
-        # filter actions        
-        
-        
-
         
         train.loc[(train.step_rank == 1) , 'last_item'] = DUMMY_ITEM
         test.loc[(test.step_rank == 1) , 'last_item'] = DUMMY_ITEM
@@ -255,11 +225,7 @@ class NCFDataGenerator():
         
         train.loc[(train.step_rank == 2) , 'second_last_item'] = DUMMY_ITEM
         test.loc[(test.step_rank == 2) , 'second_last_item'] = DUMMY_ITEM
-        
 
-
-        
-        
 
 
         data = pd.concat([train, test], axis=0)
@@ -270,18 +236,10 @@ class NCFDataGenerator():
         data_feature['time_diff_diff'] = data_feature.groupby('session_id')['time_diff'].diff()
         data_feature['time_diff'] = GaussRankScaler().fit_transform(data_feature['time_diff'].values)
         data_feature['time_diff_diff'] = GaussRankScaler().fit_transform(data_feature['time_diff_diff'].values)
-        # data_feature.loc[:,'time_diff'].fillna(0, inplace=True)
-        # print("na sum",data_feature['time_diff'].isna().sum())
-        # data_feature['time_diff'] = MinMaxScaler().fit_transform(data_feature['time_diff'].values.reshape(-1,1))
         data_feature['mm_step'] = GaussRankScaler().fit_transform(data_feature['step'].values)
         data_feature['day'] = MinMaxScaler().fit_transform(pd.to_datetime(data.timestamp, unit='s').dt.day.values.reshape(-1,1) )
         data_feature['rg_timestamp'] = GaussRankScaler().fit_transform(data_feature['timestamp'].values)
-        # data_feature['dayofweek'] = MinMaxScaler().fit_transform(pd.to_datetime(data.timestamp, unit='s').dt.dayofweek.values.reshape(-1,1) )
-        # data_feature['hour'] = MinMaxScaler().fit_transform(pd.to_datetime(data.timestamp, unit='s').dt.hour.values.reshape(-1,1) )
-
         
-        
-        # data_feature['day_of_week'] = MinMaxScaler().fit_transform(pd.to_datetime(data.timestamp, unit='s').dt.day.values.reshape(-1,1) )
 
         data_feature = data_feature.drop( ['session_id','timestamp','step'],axis=1)
 
@@ -297,27 +255,14 @@ class NCFDataGenerator():
 
         for col in self.all_cat_columns:
             self.cat_encoders[col] = CategoricalEncoder()
-                
-        
-        
-        
-        
-        
-
 
         self.cat_encoders['item_id'].fit(list(unique_items) + [DUMMY_ITEM] )
-        # with open('../input/ncf_item_enc.p', 'wb') as f:
-        #     pickle.dump(self.cat_encoders['item_id'],f)
-        
-        # with open('../input/ncf_item_enc.p', 'rb') as f:
-        #     self.cat_encoders['item_id'] = pickle.load(f)
-
         self.cat_encoders['city'].fit(data.city.values)
         self.cat_encoders['city_platform'].fit(data.city_platform.values)
         self.cat_encoders['action'].fit( list(unique_actions) + [DUMMY_ACTION])
-
-        with open('../input/user_encoder.p','rb') as f:
-            self.cat_encoders['user_id'] = pickle.load(f)
+        self.cat_encoders['user_id'].fit(data.user_id.values)
+        # with open('../input/user_encoder.p','rb') as f:
+        #     self.cat_encoders['user_id'] = pickle.load(f)
         # self.cat_encoders['user_id'].fit(data.user_id.tolist() )
 
 
@@ -364,8 +309,6 @@ class NCFDataGenerator():
         implicit_train = train.loc[train.action != self.transformed_clickout_action, :]
         implicit_test = test.loc[test.action != self.transformed_clickout_action, :]
 
-        # implicit_train = implicit_train.drop_duplicates(subset=['session_id','item_id','action'])
-        # implicit_test = implicit_test.drop_duplicates(subset=['session_id','item_id','action'])
 
         
 
@@ -380,18 +323,6 @@ class NCFDataGenerator():
         unique_interaction_image_items, counts = np.unique(interaction_image_item_ids, return_counts=True)
         self.image_count_dict = dict(zip(unique_interaction_image_items, counts))        
 
-        # interaction_deals_item_ids = train.loc[train.action == self.transformed_interaction_deals, :].drop_duplicates(subset=['session_id','item_id','action']).item_id.tolist() + test.loc[test.action == self.transformed_interaction_deals, :].drop_duplicates(subset=['session_id','item_id','action']).item_id.tolist()
-        # unique_interaction_deals_items, counts = np.unique(interaction_deals_item_ids, return_counts=True)
-        # self.deals_count_dict = dict(zip(unique_interaction_deals_items, counts))        
-
-
-        # interaction_info_item_ids = train.loc[train.action == self.transformed_interaction_info, :].drop_duplicates(subset=['session_id','item_id','action']).item_id.tolist() + test.loc[test.action == self.transformed_interaction_info, :].drop_duplicates(subset=['session_id','item_id','action']).item_id.tolist()
-        # unique_interaction_info_items, counts = np.unique(interaction_info_item_ids, return_counts=True)
-        # self.info_count_dict = dict(zip(unique_interaction_info_items, counts))        
-
-        # interaction_rating_item_ids = train.loc[train.action == self.transformed_interaction_rating, :].drop_duplicates(subset=['session_id','item_id','action']).item_id.tolist() + test.loc[test.action == self.transformed_interaction_rating, :].drop_duplicates(subset=['session_id','item_id','action']).item_id.tolist()
-        # unique_interaction_rating_items, counts = np.unique(interaction_rating_item_ids, return_counts=True)
-        # self.rating_count_dict = dict(zip(unique_interaction_rating_items, counts))        
 
         # get only the clickout
         train = train.loc[train.action ==self.transformed_clickout_action,:]
@@ -415,8 +346,7 @@ class NCFDataGenerator():
         self.clickout_count_dict = dict(zip(unique_clickout_items, counts))        
         
         self.platform_clickout_count = pd.concat([train, test], axis=0).groupby(['platform','item_id']).size()
-        # compute mean value for each item
-        # self.item_mean_price_dict = dict(price_table.groupby('item_id')['prices'].mean())
+        
 
 
 
@@ -431,8 +361,6 @@ class NCFDataGenerator():
         
 
         
-        
-        
         # {'user_id':[11,2,5,9,]}
         self.past_interaction_dict = {}
         self.past_interaction_dict_sess = {}
@@ -443,8 +371,6 @@ class NCFDataGenerator():
         self.sess_last_imp_idx_dict = {}
         self.sess_last_price_dict = {}
         self.sess_time_diff_dict = {}
-        
-
 
         
          # split the interaction df into train/ val and construct training sequences
@@ -462,30 +388,13 @@ class NCFDataGenerator():
         self.test_data['price_diff'] = price_sc.transform(self.test_data.price_diff.values.reshape(-1,1))
 
 
-        # self.train_data['last_price'] = price_sc.fit_transform(self.train_data.last_price.values.reshape(-1,1))
-        # self.val_data['last_price'] = price_sc.transform(self.val_data.last_price.values.reshape(-1,1))
-        # self.test_data['last_price'] = price_sc.transform(self.test_data.last_price.values.reshape(-1,1))
 
         price_mm = MinMaxScaler()
         self.train_data['price_ratio'] = price_mm.fit_transform(self.train_data.price_ratio.values.reshape(-1,1))
         self.val_data['price_ratio'] = price_mm.transform(self.val_data.price_ratio.values.reshape(-1,1))
         self.test_data['price_ratio'] = price_mm.transform(self.test_data.price_ratio.values.reshape(-1,1))
 
-        # mm = MinMaxScaler()
-        # self.train_data['interaction_count'] = mm.fit_transform(self.train_data.interaction_count.values.reshape(-1,1))
-        # self.val_data['interaction_count'] = mm.transform(self.val_data.interaction_count.values.reshape(-1,1))
-        # self.test_data['interaction_count'] = mm.transform(self.test_data.interaction_count.values.reshape(-1,1))        
-
-        # self.train_data['mean_price'] = price_mm.fit_transform(self.train_data.mean_price.values.reshape(-1,1))
-        # self.val_data['mean_price'] = price_mm.transform(self.val_data.mean_price.values.reshape(-1,1))
-        # self.test_data['mean_price'] = price_mm.transform(self.test_data.mean_price.values.reshape(-1,1))
-
-
-
-        
-        # self.train_data['clickout_time_diff'] = price_mm.fit_transform(self.train_data.clickout_time_diff.values.reshape(-1,1))
-        # self.val_data['clickout_time_diff'] = price_mm.transform(self.val_data.clickout_time_diff.values.reshape(-1,1))
-        # self.test_data['clickout_time_diff'] = price_mm.transform(self.test_data.clickout_time_diff.values.reshape(-1,1))        
+   
             
 
 
@@ -496,17 +405,7 @@ class NCFDataGenerator():
         self.val_data['neighbor_prices'] = self.val_data['neighbor_prices'].apply(lambda x: price_mm.transform(np.array(x).reshape(-1,1)).reshape(-1))
         self.test_data['neighbor_prices'] = self.test_data['neighbor_prices'].apply(lambda x: price_mm.transform(np.array(x).reshape(-1,1)).reshape(-1))
 
-        # print(self.train_data['price_diff'].min())
-        # print(self.val_data['price_diff'].min())
-        # print(self.test_data['price_diff'].min())
 
-        # print(self.train_data['price_diff'].max())
-        # print(self.val_data['price_diff'].max())
-        # print(self.test_data['price_diff'].max())
-
-        # print(self.train_data['price_diff'].isna().sum())
-        # print(self.val_data['price_diff'].isna().sum())
-        # print(self.test_data['price_diff'].isna().sum())
 
         if config.use_test:
             self.train_data = pd.concat([self.train_data, labeled_test], axis=0)
@@ -541,18 +440,6 @@ class NCFDataGenerator():
         item_properties_array = np.vstack(item_properties_array)
         item_properties_df = pd.DataFrame(item_properties_array, columns=unique_property + ['star', 'item_id'])
         
-        
-        
-
-        #tfidf
-        # item_meta['properties'] = item_meta['properties'].apply(lambda props: ' '.join([ '_'.join(p.split(' ')) for p in props]))
-        
-        # vectorizer = TfidfVectorizer(token_pattern=r'(?u)[^\s]+')
-        # X = vectorizer.fit_transform(item_meta.properties.values)
-        # print("tfidf output shape", X.shape)
-        # item_properties_df = pd.DataFrame(X.todense(), columns=np.arange(X.shape[1]) )
-        # item_properties_df['star'] = item_meta.star
-        # item_properties_df['item_id'] = item_meta.item_id
 
         item_properties_item_id = item_properties_df.item_id.values
         item_properties_star = item_properties_df.star.values
@@ -624,32 +511,6 @@ class NCFDataGenerator():
         self.val_data['interaction_image_count'] = self.val_data.item_id.map(self.image_count_dict)
         self.test_data['interaction_image_count'] = self.test_data.item_id.map(self.image_count_dict)
 
-        # self.train_data['interaction_deals_count'] = self.train_data.item_id.map(self.deals_count_dict)
-        # self.val_data['interaction_deals_count'] = self.val_data.item_id.map(self.deals_count_dict)
-        # self.test_data['interaction_deals_count'] = self.test_data.item_id.map(self.deals_count_dict)
-
-        # self.train_data['interaction_info_count'] = self.train_data.item_id.map(self.info_count_dict)
-        # self.val_data['interaction_info_count'] = self.val_data.item_id.map(self.info_count_dict)
-        # self.test_data['interaction_info_count'] = self.test_data.item_id.map(self.info_count_dict)
-
-        # self.train_data['interaction_rating_count'] = self.train_data.item_id.map(self.rating_count_dict)
-        # self.val_data['interaction_rating_count'] = self.val_data.item_id.map(self.rating_count_dict)
-        # self.test_data['interaction_rating_count'] = self.test_data.item_id.map(self.rating_count_dict)
-
-        # max_step_diff = max(self.train_data['step_diff'].values.max(),self.val_data['step_diff'].values.max(),self.test_data['step_diff'].values.max()  ) + 1
-        
-        # print("max_step_diff", max_step_diff)
-        # self.train_data['step_diff'] /= max_step_diff
-        # self.val_data['step_diff'] /= max_step_diff
-        # self.test_data['step_diff'] /= max_step_diff
-
-        # with open('../input/doc2vec_ft_32_df.p','rb') as f:
-        #     doc2vec_df = pickle.load(f)
-        # d2v_columns = [c for c in doc2vec_df.columns if c != 'id']
-        # self.train_data = self.train_data.merge(doc2vec_df, on='id',how='left')
-        # self.val_data = self.val_data.merge(doc2vec_df, on='id',how='left')
-        # self.test_data = self.test_data.merge(doc2vec_df, on='id',how='left')
-
         train_other_is_interacted = np.vstack(self.train_data.other_is_interacted.values).astype(np.float32)
         val_other_is_interacted = np.vstack(self.val_data.other_is_interacted.values).astype(np.float32)
         test_other_is_interacted = np.vstack(self.test_data.other_is_interacted.values).astype(np.float32)
@@ -687,12 +548,7 @@ class NCFDataGenerator():
         train_len = self.train_data.shape[0]
         val_len = self.val_data.shape[0]
 
-        # for c in ['sum_time_elapse']:
-        #     feature = self.train_data[c].values.tolist() + self.val_data[c].values.tolist() + self.test_data[c].values.tolist()
-        #     transformed_feature = GaussRankScaler().fit_transform(feature)
-        #     self.train_data[c] = transformed_feature[:train_len]
-        #     self.val_data[c] = transformed_feature[train_len:val_len+train_len]
-        #     self.test_data[c] = transformed_feature[val_len+train_len:]
+       
 
         self.continuous_features = svd_ip_columns + svd_ft_columns + is_interacted_columns + is_clicked_columns + ['mm_step','time_diff', 'day', 'mm_price', 'equal_last_impressions', 'price_diff','price','last_price','price_ratio','is_clicked','is_interacted','item_popularity','is_interacted_image','is_interacted_deals','interaction_count','clickout_count','interaction_image_count','click_diff','rg_timestamp','equal_last_item','global_clickout_count_rank','rg_price','interaction_count_avg','avg_is_interacted_image','avg_is_interacted']
 
@@ -711,15 +567,7 @@ class NCFDataGenerator():
 
             self.continuous_features.append(f'{c}_label_avg')    
 
-        # agg_cols = ['city']
-        # for c in agg_cols:
-        #     gp = self.train_data.loc[self.train_data.label == 1].groupby(c)['impression_index']
-        #     mean = gp.mean()
-        #     self.train_data[f'{c}_imp_idx_avg'] = self.train_data[c].map(mean)
-        #     self.val_data[f'{c}_imp_idx_avg'] = self.val_data[c].map(mean)
-        #     self.test_data[f'{c}_imp_idx_avg'] = self.test_data[c].map(mean)
-
-        #     self.continuous_features.append(f'{c}_imp_idx_avg')    
+    
         
         agg_cols = ['city']
         for c in agg_cols:
@@ -748,15 +596,7 @@ class NCFDataGenerator():
 
         
                
-        # agg_cols = ['city']
-        # for c in agg_cols:
-        #     gp = self.train_data.groupby(c)['time_diff']
-        #     mean = gp.mean()
-        #     self.train_data[f'{c}_td_avg'] = self.train_data[c].map(mean)
-        #     self.val_data[f'{c}_td_avg'] = self.val_data[c].map(mean)
-        #     self.test_data[f'{c}_td_avg'] = self.test_data[c].map(mean)
-
-        #     self.continuous_features.append(f'{c}_td_avg')                    
+                      
 
         # fill zero
         for col in ['star','time_diff']:
@@ -823,11 +663,6 @@ class NCFDataGenerator():
             if row.session_id not in self.sess_time_diff_dict:
                 self.sess_time_diff_dict[row.session_id] = None
 
-            # if row.session_id not in self.sess_impressions_dict:
-            #     self.sess_impressions_dict[row.session_id] = set()
-            # if row.session_id not in self.sess_last_step_dict:
-            #     self.sess_last_step_dict[row.session_id] = None
-            
             transformed_impressions = self.cat_encoders['item_id'].transform(row.impressions, to_np=True)
 
             # compute session_interaction
@@ -1048,15 +883,6 @@ class NCFDataGenerator():
                 self.sess_last_imp_idx_dict[row.session_id] = (transformed_impressions == row.item_id).tolist().index(True)
                 self.sess_last_price_dict[row.session_id] = np.array(row.prices)[ transformed_impressions == row.item_id ][0]
             
-            
-            
-            
-
-            
-            
-            
-            
-            
 
         data = np.vstack(df_list)
         dtype_dict = {"city":"int32", "last_item":"int32", 'impression_index':'int32', "step":"int32","id":"int32", "user_id":"int32",
@@ -1076,19 +902,19 @@ class NCFDataGenerator():
 
         train_data = self.train_data
 
-        return NCFDataLoader(train_data, self.config, shuffle=True, batch_size=self.config.batch_size, continuous_features=self.continuous_features)
+        return NNDataLoader(train_data, self.config, shuffle=True, batch_size=self.config.batch_size, continuous_features=self.continuous_features)
     def evaluate_data_valid(self):
         val_data = self.val_data
-        return NCFDataLoader(val_data, self.config, shuffle=False, batch_size=self.config.batch_size, continuous_features=self.continuous_features)
+        return NNDataLoader(val_data, self.config, shuffle=False, batch_size=self.config.batch_size, continuous_features=self.continuous_features)
             
     def instance_a_test_loader(self):
         test_data = self.test_data
-        return NCFDataLoader(test_data, self.config, shuffle=False, batch_size=self.config.batch_size,continuous_features=self.continuous_features)
+        return NNDataLoader(test_data, self.config, shuffle=False, batch_size=self.config.batch_size,continuous_features=self.continuous_features)
 
 
 if __name__ =='__main__':
-    conf = NCFConfiguration()
-    data_gen = NCFDataGenerator(conf)
+    conf = NNConfiguration()
+    data_gen = NNDataGenerator(conf)
     with timer("gen"):
         for result in data_gen.instance_a_train_loader(128):
             print(result[-1])
