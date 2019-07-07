@@ -81,7 +81,7 @@ python run_xgb.py
 ```
 The submission files are stored in the ```output``` directory. 
 
-The results generated from LightGBM alone would place us at the 5th place in the public leaderboard. To ensemble these three models, change the output name of each model in ```Merge.ipynb``` and run it.
+The results generated from LightGBM alone would place us at the 5th position in the public leaderboard. To ensemble these three models, change the output name of each model in ```Merge.ipynb``` and run it.
 
 
 ## Performance
