@@ -13,7 +13,6 @@ import lightgbm as lgb
 import scipy
 from sklearn.decomposition import TruncatedSVD
 import multiprocessing
-import slack
 from ordered_set import OrderedSet
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import log_loss
