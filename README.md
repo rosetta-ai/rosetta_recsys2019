@@ -1,4 +1,4 @@
-# The 5th Place Solution to The 2019 ACM RecSys Challenge
+# The 5th Place Solution to the 2019 ACM RecSys Challenge
 
 
 <a href="https://rosetta.ai/"><img src="https://www.rosetta.ai/images/logo.png" height="90" ></a>
