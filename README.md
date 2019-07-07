@@ -31,4 +31,6 @@ This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. I
 * Sklearn==0.21.2
 * Scipy==1.3.0
 * LightGBM==2.2.4
-* XGBoost == 0.9
+* XGBoost==0.9
+* timezonefinder==4.0.3
+* geopy==1.20.0
