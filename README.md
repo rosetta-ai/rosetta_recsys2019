@@ -1,4 +1,4 @@
-# 2019 ACM RecSys Challenge RosettaAI Solution
+# The 5th Place Solution to The 2019 ACM RecSys Challenge
 
 
 <a href="https://rosetta.ai/"><img src="https://www.rosetta.ai/images/logo.png" height="90" ></a>
@@ -22,7 +22,7 @@ This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. I
 
 
 ## Environment
-* Nvidia Tesla V100
+* Ubuntu 16.04
 * CUDA 9.0 
 * Python==3.6.8
 * Numpy==1.16
@@ -31,4 +31,6 @@ This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. I
 * Sklearn==0.21.2
 * Scipy==1.3.0
 * LightGBM==2.2.4
-* XGBoost == 0.9
+* XGBoost==0.9
+* timezonefinder==4.0.3
+* geopy==1.20.0
