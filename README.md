@@ -34,3 +34,51 @@ This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. I
 * XGBoost==0.9
 * timezonefinder==4.0.3
 * geopy==1.20.0
+
+## Project Structure
+
+```
+├── input
+├── output
+├── src
+└── weights
+```
+
+## Setup
+Run the following commands to create directories that conform to the structure of the project, then place the unzipped data into the ```input``` directory.:
+
+```. setup.sh```
+
+
+
+Run the two python scripts to picklize the input data and obtain the utc offsets from countries:
+```
+cd src
+python picklization.py
+python country2utc.py
+```
+
+To enable the model to train on the whole data, set ```debug``` and ```subsample``` to ```False``` in the ```config.py``` file.
+
+```
+class Configuration(object):
+
+    def __init__(self):
+        ...
+        self.debug = False
+        self.sub_sample = False
+        ...
+```
+
+
+## Training & Prediction
+
+The models are all trained in an end-to-end fashion, to train each of the three models, simply run the following commands:
+```
+python run_nn.py
+python run_lgb.py
+python run_xgb.py
+```
+The submission files are stored in the ```output``` directory. 
+
+The results generated from LGBM alone would place us at the 5th place in the public leaderboard. To ensemble these three models, change the output name of each model in ```Merge.ipynb``` and run it.
