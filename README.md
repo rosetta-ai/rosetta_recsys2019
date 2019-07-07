@@ -7,14 +7,14 @@
 
 
 ## Team members 
-_Kung-hsiang (Steeve), Huang_ __(Rosetta.ai)__; _Yi-fu, Fu_; _Yi-ting, Lee_; _Zong-han, Lee_; _Yao-chun, Jan_ __(National Taiwan University)__; _Yi-hui, Lee_ __(University of Texas at Dallas)__
+_Kung-hsiang (Steeve), Huang_ __(Rosetta.ai)__; _Yi-fu, Fu_; _Yi-ting, Lee_; _Zong-han, Lee_; _Yao-chun, Jan_ __(National Taiwan University)__; _Yi-hui, Lee_ __(University of Texas at Dallas)__; _Shou-de, Lin_ __(National Taiwan University)__
 
 Contact: steeve@rosetta.ai
 
 
 
 ## Introduction
-This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. Instead of treating it as a ranking problem, we use Binary Cross Entropy as our loss function. Three different models were implemented:
+This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. Instead of treating it as a ranking problem, we use __Binary Cross Entropy__ as our loss function. Three different models were implemented:
 1. Neural Networks (based on [DeepFM](https://arxiv.org/pdf/1804.04950.pdf))
 2. LightGBM 
 3. XGBoost
@@ -81,4 +81,13 @@ python run_xgb.py
 ```
 The submission files are stored in the ```output``` directory. 
 
-The results generated from LGBM alone would place us at the 5th place in the public leaderboard. To ensemble these three models, change the output name of each model in ```Merge.ipynb``` and run it.
+The results generated from LightGBM alone would place us at the 5th place in the public leaderboard. To ensemble these three models, change the output name of each model in ```Merge.ipynb``` and run it.
+
+
+## Performance
+
+| Model        | Local Validation MRR           | Public Leaderboard MRR  |
+| ------------- |-------------:| -----:|
+| LightGBM      | 0.685787 | N/A |
+| XGBoost      | 0.684521      |   0.681128  |
+| NN | 0.675206      |    0.672117  |
