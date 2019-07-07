@@ -9,6 +9,7 @@ import datetime
 import pytz
 
 tzf = TimezoneFinder()
+geolocator = Nominatim(user_agent="recsys")
 
 with open('../input/train_v2.p', 'rb') as f:
     train = pickle.load(f)

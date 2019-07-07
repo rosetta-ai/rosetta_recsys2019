@@ -2,7 +2,7 @@ import numpy as np
 from datetime import datetime
 import torch
 import inspect
-from loss import *
+
 
 class Configuration(object):
 
@@ -16,7 +16,7 @@ class Configuration(object):
         self.early_stopping = 1
         self.loss = torch.nn.BCELoss
         self.debug = True
-        self.sub_sample = True
+        self.sub_sample = False
         self.slack = True
         self.use_test = True if not self.sub_sample else False
 
