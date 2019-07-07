@@ -73,7 +73,7 @@ class Configuration(object):
 
 ## Training & Submission
 
-The models are all trained in an end-to-end fashion. To train each of the three models, simply run the following commands:
+The models are all trained in an end-to-end fashion. To train and predict each of the three models, simply run the following commands:
 ```
 python run_nn.py
 python run_lgb.py
