@@ -7,7 +7,7 @@
 
 
 ## Team members 
-_Kung-hsiang (Steeve), Huang_ __(Rosetta.ai)__; _Yi-fu, Fu_; _Yi-ting, Lee_; _Zong-han, Lee_; _Yao-chun, Jan_ __(National Taiwan University)__; _Yi-hui, Lee_ __(University of Texas at Dallas)__; _Shou-de, Lin_ __(National Taiwan University)__
+_Kung-hsiang (Steeve), Huang_ __(Rosetta.ai)__; _Yi-fu, Fu_; _Yi-ting, Lee_; _Zong-han, Lee_; _Yao-chun, an_ __(National Taiwan University)__; _Yi-hui, Lee_ __(University of Texas at Dallas)__; _Shou-de, Lin_ __(National Taiwan University)__
 
 Contact: steeve@rosetta.ai
 
