@@ -15,7 +15,7 @@ Contact: steeve@rosetta.ai
 
 ## Introduction
 This repository contains RosettaAI's approach to the 2019 ACM Recys Challenge. Instead of treating it as a ranking problem, we use __Binary Cross Entropy__ as our loss function. Three different models were implemented:
-1. Neural Networks (based on [DeepFM](https://arxiv.org/pdf/1804.04950.pdf))
+1. Neural Networks (based on [DeepFM](https://arxiv.org/pdf/1804.04950.pdf) and this [Youtube paper](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/45530.pdf))
 2. LightGBM 
 3. XGBoost
 
