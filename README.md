@@ -6,7 +6,7 @@
 <a href="https://www.utdallas.edu/"><img src="https://yt3.ggpht.com/a/AGF-l7-x9pb2HmLWEJxTncC5EjzekRKX9I-qpX4nXg=s900-mo-c-c0xffffffff-rj-k-no"  height="130"></a> 
 
 
-## Team members 
+## Team Members 
 _Kung-hsiang (Steeve), Huang_ __(Rosetta.ai)__; _Yi-fu, Fu_; _Yi-ting, Lee_; _Tzong-hann, Lee_; _Yao-chun, Chan_ __(National Taiwan University)__; _Yi-hui, Lee_ __(University of Texas at Dallas)__; _Shou-de, Lin_ __(National Taiwan University)__
 
 Contact: steeve@rosetta.ai
